@@ -15,6 +15,7 @@ export default function PlansPage() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState<any>(null);
     const [investingId, setInvestingId] = useState<string | null>(null);
+    const [amounts, setAmounts] = useState<Record<string, string>>({});
     const { showAlert } = useAlert();
     const supabase = createClient();
 
@@ -53,11 +54,22 @@ export default function PlansPage() {
         fetchData();
     }, []);
 
+    const handleAmountChange = (planId: string, value: string) => {
+        setAmounts(prev => ({ ...prev, [planId]: value }));
+    };
+
     const handleInvest = async (plan: any) => {
         if (!userData) return;
 
-        if (userData.available_balance < plan.min_deposit) {
-            showAlert(`Insufficient funds. You need at least $${plan.min_deposit.toLocaleString()} in your available balance.`, "error", "Balance Conflict");
+        const investmentAmount = amounts[plan.id] ? Number(amounts[plan.id]) : plan.min_deposit;
+
+        if (investmentAmount < plan.min_deposit) {
+            showAlert(`Minimum deposit for ${plan.name} is $${plan.min_deposit.toLocaleString()}.`, "error", "Invalid Amount");
+            return;
+        }
+
+        if (userData.available_balance < investmentAmount) {
+            showAlert(`Insufficient funds. You need at least $${investmentAmount.toLocaleString()} in your available balance.`, "error", "Balance Conflict");
             return;
         }
 
@@ -66,11 +78,12 @@ export default function PlansPage() {
             const res = await fetch("/api/invest", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planId: plan.id, amount: plan.min_deposit })
+                body: JSON.stringify({ planId: plan.id, amount: investmentAmount })
             });
 
             if (res.ok) {
-                showAlert(`Successfully invested $${plan.min_deposit.toLocaleString()} in the ${plan.name}.`, "success", "Investment Active");
+                showAlert(`Successfully invested $${investmentAmount.toLocaleString()} in the ${plan.name}.`, "success", "Investment Active");
+                setAmounts(prev => ({ ...prev, [plan.id]: "" }));
                 // Refresh user data
                 const userRes = await fetch("/api/user/dashboard");
                 if (userRes.ok) {
@@ -152,7 +165,7 @@ export default function PlansPage() {
                                     <span className="text-white font-bold">${plan.min_deposit.toLocaleString()}</span>
                                 </div>
 
-                                <ul className="space-y-4 pt-4 border-t border-white/20 text-white">
+                                <ul className="space-y-4 pt-4 border-t border-white/20 text-white mb-6">
                                     {plan.features.map((f: string, j: number) => (
                                         <li key={j} className="flex items-center gap-3 text-xs text-white/80">
                                             <div className="w-1.5 h-1.5 bg-white shrink-0" />
@@ -160,6 +173,22 @@ export default function PlansPage() {
                                         </li>
                                     ))}
                                 </ul>
+
+                                <div>
+                                    <label className="block text-white/70 text-[9px] uppercase tracking-[0.2em] mb-2" style={FONT_MONO}>Deposit Amount</label>
+                                    <div className="flex items-center bg-[#143a22] border border-white/20 p-4 focus-within:border-white transition-colors">
+                                        <span className="text-white/70 mr-2 font-bold">$</span>
+                                        <input
+                                            type="number"
+                                            min={plan.min_deposit}
+                                            placeholder={plan.min_deposit.toString()}
+                                            value={amounts[plan.id] || ""}
+                                            onChange={(e) => handleAmountChange(plan.id, e.target.value)}
+                                            className="bg-transparent text-white w-full outline-none font-bold placeholder:text-white/30"
+                                            style={FONT_MONO}
+                                        />
+                                    </div>
+                                </div>
                             </div>
 
                             <button
