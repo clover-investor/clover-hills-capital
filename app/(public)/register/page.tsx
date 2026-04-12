@@ -48,7 +48,7 @@ export default function RegisterPage() {
                 <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mb-4" style={FONT_MONO}>
                     Clover Hills — New Client Application
                 </p>
-                <h1 className="text-5xl font-light mb-10 text-foreground" style={FONT_DISPLAY}>
+                <h1 className="text-5xl font-semibold mb-10 text-foreground" style={FONT_DISPLAY}>
                     Open Account
                 </h1>
 
