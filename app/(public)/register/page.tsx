@@ -27,6 +27,13 @@ export default function RegisterPage() {
         });
         if (authError) { showError(authError.message, "Registration Failed"); setLoading(false); return; }
         if (authData?.user) {
+            // Trigger Welcome Email
+            fetch('/api/send-email/welcome', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: email, fullName })
+            }).catch(console.error);
+
             showSuccess("Application submitted. Await approval notification.", "Submitted");
             router.push("/pending");
         }

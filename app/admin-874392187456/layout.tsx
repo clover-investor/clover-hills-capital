@@ -65,6 +65,7 @@ export default async function AdminLayout({
                 <div className="flex px-12 border-t border-[var(--border-light)] overflow-x-auto no-scrollbar">
                     {[
                         { label: "Manage Users", href: adminBase },
+                        { label: "Ledger", href: `${adminBase}/transactions` },
                         { label: "Investment Plans", href: `${adminBase}/plans` },
                         { label: "KYC Approvals", href: `${adminBase}/kyc` },
                     ].map(l => (

@@ -50,13 +50,18 @@ export async function POST(req: Request) {
 
         // 3. Log the transaction (Check if plan exists to avoid FK error)
         let linkablePlanId = null;
+        let planName = "Algorithmic Strategy";
+
         if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(planId)) {
             const { data: plan } = await adminSupabase
                 .from("plans")
-                .select("id")
+                .select("id, name")
                 .eq("id", planId)
                 .single();
-            if (plan) linkablePlanId = plan.id;
+            if (plan) {
+                linkablePlanId = plan.id;
+                planName = plan.name;
+            }
         }
 
         const { error: txError } = await adminSupabase.from("transactions").insert({
@@ -72,6 +77,12 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Balance updated but transaction log failed: " + txError.message }, { status: 500 });
         }
 
+        try {
+            const { sendNewInvestmentEmail } = await import('@/lib/email');
+            await sendNewInvestmentEmail((authUser as any).email, Number(amount).toFixed(2), planName);
+        } catch (emailErr) {
+            console.error("Investment email dispatch failed:", emailErr);
+        }
 
         return NextResponse.json({ success: true });
 

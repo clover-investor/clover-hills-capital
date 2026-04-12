@@ -24,7 +24,7 @@ export default function WithdrawPage() {
             const res = await fetch("/api/transactions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: "withdrawal", amount: Number(amount) })
+                body: JSON.stringify({ type: "withdrawal", amount: Number(amount), method, address })
             });
             if (res.ok) {
                 setSuccess(true);

@@ -1,0 +1,24 @@
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/utils/supabase/admin";
+import { createClient } from "@/utils/supabase/server";
+
+export async function GET() {
+    const supabase = await createClient();
+    const { data: auth, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !auth?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: user } = await supabase.from("users").select("role").eq("id", auth.user.id).single();
+    if (user?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    const adminDb = createAdminClient();
+    const { data: transactions, error } = await adminDb
+        .from("transactions")
+        .select("*, users!inner(email)")
+        .order("created_at", { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ transactions: transactions || [] });
+}

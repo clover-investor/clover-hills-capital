@@ -26,6 +26,16 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "Clover Hills",
   description: "Clover Hills — Institutional-grade algorithmic trading infrastructure for digital asset portfolios.",
+  icons: {
+    icon: "/logoImages/logo.png",
+    shortcut: "/logoImages/logo.png",
+    apple: "/logoImages/logo.png",
+  },
+  openGraph: {
+    title: "Clover Hills",
+    description: "Institutional-grade algorithmic trading infrastructure for digital asset portfolios.",
+    images: [{ url: "/logoImages/logo.png" }],
+  }
 };
 
 export default function RootLayout({

@@ -14,7 +14,29 @@ export async function POST(req: Request) {
     const { userId, updates } = body;
 
     const adminDb = createAdminClient();
+
+    // Pre-fetch user to compare balance changes
+    let oldUser: any = null;
+    if (updates.available_balance || updates.total_balance || updates.invested) {
+        const { data } = await adminDb.from("users").select("*").eq("id", userId).single();
+        oldUser = data;
+    }
+
     const { error } = await adminDb.from("users").update(updates).eq("id", userId);
+
+    if (!error && oldUser) {
+        let details = [];
+        if (updates.available_balance && Number(updates.available_balance) > Number(oldUser.available_balance)) {
+            details.push(`Available balance increased to $${updates.available_balance}`);
+        }
+        if (updates.invested && Number(updates.invested) > Number(oldUser.invested)) {
+            details.push(`Active capital increased to $${updates.invested}`);
+        }
+        if (details.length > 0) {
+            const { sendAdminActionEmail } = await import('@/lib/email');
+            await sendAdminActionEmail(oldUser.email, "Balance Credit", details.join(". "));
+        }
+    }
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
