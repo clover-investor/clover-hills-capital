@@ -34,7 +34,37 @@ export async function POST(req: Request) {
     const adminDb = createAdminClient();
     const status = action === "approve" ? "approved" : "rejected";
 
+    // Grab user details before update so we can email them
+    const { data: kycRec } = await adminDb.from("kyc").select("user_id").eq("id", kycId).single();
+    let targetUser = null;
+    if (kycRec) {
+        const { data } = await adminDb.from("users").select("email, full_name").eq("id", kycRec.user_id).single();
+        targetUser = data;
+    }
+
     const { error } = await adminDb.from("kyc").update({ status }).eq("id", kycId);
+
+    if (!error && targetUser) {
+        try {
+            const { sendAdminActionEmail } = await import("@/lib/email");
+            if (status === "approved") {
+                await sendAdminActionEmail(
+                    targetUser.email,
+                    "KYC Verification Approved",
+                    "Your identity verification documents have been successfully reviewed and approved. Your account is now fully verified and restrictions have been lifted."
+                );
+            } else {
+                await sendAdminActionEmail(
+                    targetUser.email,
+                    "KYC Verification Declined",
+                    "Unfortunately, we could not verify the identity documents provided. Please review the requirements on your dashboard and submit a new application, or contact our support team for assistance."
+                );
+            }
+        } catch (emailErr) {
+            console.error("Failed to send KYC email:", emailErr);
+        }
+    }
+
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
 }
