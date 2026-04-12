@@ -5,6 +5,7 @@ import AdminActionEmail from '@/emails/AdminActionEmail';
 import DailyRoiEmail from '@/emails/DailyRoiEmail';
 import NewInvestmentEmail from '@/emails/NewInvestmentEmail';
 import TransactionRequestEmail from '@/emails/TransactionRequestEmail';
+import AccountActivatedEmail from '@/emails/AccountActivatedEmail';
 import * as React from 'react';
 
 // Initialize with environment key - safe on server functions
@@ -82,4 +83,17 @@ export async function sendBulkDailyRoiEmail(users: { email: string; amount: stri
             await resend.batch.send(batch.slice(i, i + 100));
         }
     } catch (err) { console.error('Failed to send daily ROI emails:', err); }
+}
+
+export async function sendAccountActivatedEmail(to: string, fullName: string) {
+    if (!process.env.RESEND_API_KEY) return;
+    try {
+        const html = await render(React.createElement(AccountActivatedEmail, { fullName }));
+        await resend.emails.send({
+            from: senderEmail,
+            to: [to],
+            subject: 'Account Activated — Clover Hills',
+            html
+        });
+    } catch (err) { console.error('Failed to send activation email:', err); }
 }

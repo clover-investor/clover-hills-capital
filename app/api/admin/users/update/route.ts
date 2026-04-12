@@ -15,9 +15,9 @@ export async function POST(req: Request) {
 
     const adminDb = createAdminClient();
 
-    // Pre-fetch user to compare balance changes
+    // Pre-fetch user to compare balance or status changes
     let oldUser: any = null;
-    if (updates.available_balance || updates.total_balance || updates.invested) {
+    if (updates.available_balance || updates.total_balance || updates.invested || updates.status) {
         const { data } = await adminDb.from("users").select("*").eq("id", userId).single();
         oldUser = data;
     }
@@ -25,6 +25,13 @@ export async function POST(req: Request) {
     const { error } = await adminDb.from("users").update(updates).eq("id", userId);
 
     if (!error && oldUser) {
+        const { sendAdminActionEmail, sendAccountActivatedEmail } = await import('@/lib/email');
+
+        // Check for activation
+        if (updates.status === 'active' && oldUser.status !== 'active') {
+            await sendAccountActivatedEmail(oldUser.email, oldUser.full_name);
+        }
+
         let details = [];
         if (updates.available_balance && Number(updates.available_balance) > Number(oldUser.available_balance)) {
             details.push(`Available balance increased to $${updates.available_balance}`);
@@ -33,7 +40,6 @@ export async function POST(req: Request) {
             details.push(`Active capital increased to $${updates.invested}`);
         }
         if (details.length > 0) {
-            const { sendAdminActionEmail } = await import('@/lib/email');
             await sendAdminActionEmail(oldUser.email, "Balance Credit", details.join(". "));
         }
     }

@@ -68,6 +68,7 @@ export default async function AdminLayout({
                         { label: "Ledger", href: `${adminBase}/transactions` },
                         { label: "Investment Plans", href: `${adminBase}/plans` },
                         { label: "KYC Approvals", href: `${adminBase}/kyc` },
+                        { label: "Support Inbox", href: `${adminBase}/support` },
                     ].map(l => (
                         <Link
                             key={l.href}
