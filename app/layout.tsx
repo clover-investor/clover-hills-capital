@@ -4,6 +4,7 @@ import "./globals.css";
 import { AlertProvider } from "@/components/ui/AlertProvider";
 import CustomCursor from "@/components/ui/CustomCursor";
 import CookieConsent from "@/components/ui/CookieConsent";
+import SupportChat from "@/components/layout/SupportChat";
 
 const cormorant = Cormorant_Garamond({
   weight: ["300", "400", "500", "600", "700"],
@@ -49,6 +50,7 @@ export default function RootLayout({
         <AlertProvider>
           <CustomCursor />
           <CookieConsent />
+          <SupportChat />
           {children}
         </AlertProvider>
       </body>

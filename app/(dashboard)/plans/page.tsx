@@ -20,7 +20,7 @@ export default function PlansPage() {
 
     const fallbackPlans = [
         { id: "8f6b6a6c-486d-4e9f-9c60-4e1781191060", name: "Bronze Plan", min_deposit: 100, daily_roi: 10, duration_days: 7, features: ["Daily Earnings Payout", "Standard Trading", "Secure Storage"] },
-        { id: "a713b14d-6e47-4939-9d62-7e0e7a17684d", name: "Silver Plan", min_deposit: 500, daily_roi: 20, duration_days: 14, features: ["Priority Returns", "Advanced Trading", "24/7 Support", "Daily Payout"] },
+        { id: "a713b14d-6e47-4939-9d62-7e0e7a17684d", name: "Silver Plan", min_deposit: 1000, daily_roi: 20, duration_days: 14, features: ["Priority Returns", "Advanced Trading", "24/7 Support", "Daily Payout"] },
         { id: "9c629d29-cae5-4813-a5af-be409ea622ce", name: "Gold Plan", min_deposit: 5000, daily_roi: 35, duration_days: 30, features: ["Premium Features", "Personal Account Manager", "Zero Fees", "Instant Payout"] },
     ];
 
@@ -120,52 +120,57 @@ export default function PlansPage() {
                 {plans.map((plan, i) => (
                     <div
                         key={plan.id}
-                        className="bg-background p-10 flex flex-col group hover:bg-muted transition-colors duration-200"
+                        className="bg-background flex flex-col group transition-colors duration-200"
                     >
-                        <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground mb-12" style={FONT_MONO}>
-                            Plan 0{i + 1}
-                        </p>
+                        <div className="p-10 pb-4">
+                            <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground mb-12" style={FONT_MONO}>
+                                Plan 0{i + 1}
+                            </p>
 
-                        <h3 className="text-3xl font-light mb-2 text-foreground" style={FONT_DISPLAY}>
-                            {plan.name}
-                        </h3>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-10" style={FONT_MONO}>
-                            {plan.duration_days} Day Period
-                        </p>
-
-                        <div className="flex items-baseline gap-2 mb-12 border-b border-[var(--border-light)] pb-8">
-                            <span className="text-5xl font-light text-foreground tracking-tighter" style={FONT_DISPLAY}>
-                                {plan.daily_roi}%
-                            </span>
-                            <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground" style={FONT_MONO}>
-                                Daily Profit
-                            </span>
+                            <h3 className="text-3xl font-extrabold mb-2 text-foreground" style={FONT_DISPLAY}>
+                                {plan.name}
+                            </h3>
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-6" style={FONT_MONO}>
+                                {plan.duration_days} Day Period
+                            </p>
                         </div>
 
-                        <div className="space-y-6 mb-12 flex-1">
-                            <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
-                                <span className="text-muted-foreground">Min. Deposit</span>
-                                <span className="text-foreground font-bold">${plan.min_deposit.toLocaleString()}</span>
+                        {/* Green Section */}
+                        <div className="flex-1 bg-[#1a4d2e] p-10 flex flex-col">
+                            <div className="flex items-baseline gap-2 mb-12 border-b border-white/20 pb-8">
+                                <span className="text-5xl font-light text-white tracking-tighter" style={FONT_DISPLAY}>
+                                    {plan.daily_roi}%
+                                </span>
+                                <span className="text-[9px] uppercase tracking-[0.2em] text-white/70" style={FONT_MONO}>
+                                    Daily Profit
+                                </span>
                             </div>
 
-                            <ul className="space-y-4 pt-4 border-t border-[var(--border-light)]">
-                                {plan.features.map((f: string, j: number) => (
-                                    <li key={j} className="flex items-center gap-3 text-xs text-muted-foreground">
-                                        <div className="w-1.5 h-1.5 bg-[var(--gold)] shrink-0" />
-                                        {f}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                            <div className="space-y-6 mb-12 flex-1">
+                                <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
+                                    <span className="text-white/70">Min. Deposit</span>
+                                    <span className="text-white font-bold">${plan.min_deposit.toLocaleString()}</span>
+                                </div>
 
-                        <button
-                            onClick={() => handleInvest(plan)}
-                            disabled={investingId === plan.id}
-                            className="w-full py-5 border border-foreground text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-foreground hover:text-background transition-all disabled:opacity-50"
-                            style={FONT_MONO}
-                        >
-                            {investingId === plan.id ? "Processing…" : "Start Investing"}
-                        </button>
+                                <ul className="space-y-4 pt-4 border-t border-white/20 text-white">
+                                    {plan.features.map((f: string, j: number) => (
+                                        <li key={j} className="flex items-center gap-3 text-xs text-white/80">
+                                            <div className="w-1.5 h-1.5 bg-white shrink-0" />
+                                            {f}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
+                            <button
+                                onClick={() => handleInvest(plan)}
+                                disabled={investingId === plan.id}
+                                className="w-full py-5 bg-white text-[#1a4d2e] text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-all disabled:opacity-50"
+                                style={FONT_MONO}
+                            >
+                                {investingId === plan.id ? "Processing…" : "Start Investing"}
+                            </button>
+                        </div>
                     </div>
                 ))}
             </div>

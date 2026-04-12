@@ -33,8 +33,12 @@ export default function Navbar() {
 
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
                 <div className="flex justify-between items-center h-20">
-                    <Link href="/" className="shrink-0">
-                        <Logo />
+                    <Link href="/" className="shrink-0 flex items-center">
+                        <img
+                            src="/logoImages/clover banner transp.png"
+                            alt="Clover Hills"
+                            className="h-10 w-auto object-contain"
+                        />
                     </Link>
 
                     <div className="hidden md:flex items-center gap-10">

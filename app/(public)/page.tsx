@@ -23,9 +23,9 @@ export default function Home() {
     ];
 
     const fallbackPlans = [
-        { id: 1, name: "Alpha Strategy", min_deposit: 100, daily_roi: 1.5, duration_days: 7, features: ["Daily Yield Payout", "Standard Execution", "Capital Segregation"] },
-        { id: 2, name: "Sigma Execution", min_deposit: 1000, daily_roi: 3.5, duration_days: 14, features: ["Priority Execution", "Advanced Arbitrage", "24h Support", "Daily Payout"] },
-        { id: 3, name: "Omni Protocol", min_deposit: 5000, daily_roi: 8.5, duration_days: 30, features: ["Institutional Access", "Bespoke Management", "Zero Fees", "Instant Payout"] },
+        { id: 1, name: "Bronze Plan", min_deposit: 100, daily_roi: 10, duration_days: 7, features: ["Daily Yield Payout", "Standard Execution", "Capital Segregation"] },
+        { id: 2, name: "Silver Plan", min_deposit: 1000, daily_roi: 20, duration_days: 14, features: ["Priority Execution", "Advanced Arbitrage", "24h Support", "Daily Payout"] },
+        { id: 3, name: "Gold Plan", min_deposit: 5000, daily_roi: 35, duration_days: 30, features: ["Institutional Access", "Bespoke Management", "Zero Fees", "Instant Payout"] },
     ];
 
     useEffect(() => {
@@ -90,7 +90,7 @@ export default function Home() {
                             </p>
 
                             <h1
-                                className="text-7xl md:text-[7rem] lg:text-[8.5rem] font-light leading-[0.88] tracking-tight"
+                                className="text-7xl md:text-[7rem] lg:text-[8.5rem] font-semibold leading-[0.88] tracking-tight"
                                 style={FONT_DISPLAY}
                             >
                                 Absolute
@@ -102,9 +102,12 @@ export default function Home() {
                                 className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed font-normal"
                                 style={FONT_SANS}
                             >
-                                Institutional algorithmic trading infrastructure for the
-                                disciplined deployment of private capital into digital-asset
-                                markets.
+                                Welcome to Clover Capital Hills
+                                Clover Capital Hills is an automated investment platform designed to help users benefit
+                                from the massive growth and global popularity of Bitcoin often referred to as digital gold.
+                                As Bitcoin continues to expand in adoption and long-term value, Clover Capital Hills uses
+                                smart auto-trading strategies to grow user portfolios over time, allowing investors to
+                                simply deposit and let the system work automatically.
                             </p>
 
                             {/* CTA bar */}
@@ -134,9 +137,9 @@ export default function Home() {
                             className="w-full lg:w-80 flex flex-col gap-px bg-foreground border border-foreground"
                         >
                             {[
-                                { label: "Assets Under Management", val: "$4.2B" },
+                                { label: "Assets Under Management", val: "$298.7k" },
                                 { label: "Algorithm Uptime", val: "99.99%" },
-                                { label: "Active Client Accounts", val: "85,000+" },
+                                { label: "Active Client Accounts", val: "100+" },
                             ].map((s) => (
                                 <div key={s.label} className="bg-background px-8 py-8 hover:bg-muted transition-colors duration-200">
                                     <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-3" style={FONT_MONO}>
@@ -235,50 +238,54 @@ export default function Home() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 border border-[var(--border-light)] bg-[var(--border-light)] gap-px">
                         {plans.map((plan, i) => (
-                            <div key={plan.id} className="bg-background p-10 flex flex-col group hover:bg-muted transition-colors duration-200">
-                                <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground mb-12" style={FONT_MONO}>
-                                    Tier 0{i + 1}
-                                </p>
+                            <div key={plan.id} className="bg-background flex flex-col group transition-colors duration-200">
+                                <div className="p-10 pb-4">
+                                    <p className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground mb-12" style={FONT_MONO}>
+                                        Tier 0{i + 1}
+                                    </p>
 
-                                <h3 className="text-3xl font-light mb-2 text-foreground" style={FONT_DISPLAY}>
-                                    {plan.name}
-                                </h3>
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-10" style={FONT_MONO}>
-                                    {plan.duration_days} Day Cycle
-                                </p>
-
-                                <div className="flex items-baseline gap-2 mb-12 border-b border-[var(--border-light)] pb-8">
-                                    <span className="text-5xl font-light text-foreground tracking-tighter" style={FONT_DISPLAY}>
-                                        {plan.daily_roi}%
-                                    </span>
-                                    <span className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground" style={FONT_MONO}>
-                                        Daily Return
-                                    </span>
+                                    <h3 className="text-3xl font-extrabold mb-2 text-foreground" style={FONT_DISPLAY}>
+                                        {plan.name}
+                                    </h3>
+                                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-6" style={FONT_MONO}>
+                                        {plan.duration_days} Day Cycle
+                                    </p>
                                 </div>
 
-                                <div className="space-y-6 mb-12 flex-1">
-                                    <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
-                                        <span className="text-muted-foreground">Min. Deposit</span>
-                                        <span className="text-foreground font-bold">${plan.min_deposit?.toLocaleString()}</span>
+                                <div className="flex-1 bg-[#1a4d2e] p-10 flex flex-col">
+                                    <div className="flex items-baseline gap-2 mb-12 border-b border-white/20 pb-8">
+                                        <span className="text-5xl font-light text-white tracking-tighter" style={FONT_DISPLAY}>
+                                            {plan.daily_roi}%
+                                        </span>
+                                        <span className="text-[9px] uppercase tracking-[0.2em] text-white/70" style={FONT_MONO}>
+                                            Daily Return
+                                        </span>
                                     </div>
 
-                                    <ul className="space-y-4 pt-4 border-t border-[var(--border-light)]">
-                                        {plan.features?.map((f: string, j: number) => (
-                                            <li key={j} className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                <div className="w-1.5 h-1.5 bg-[var(--gold)] shrink-0" />
-                                                {f}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
+                                    <div className="space-y-6 mb-12 flex-1">
+                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
+                                            <span className="text-white/70">Min. Deposit</span>
+                                            <span className="text-white font-bold">${plan.min_deposit?.toLocaleString()}</span>
+                                        </div>
 
-                                <Link
-                                    href="/register"
-                                    className="w-full text-center py-5 border border-foreground text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-foreground hover:text-background transition-all"
-                                    style={FONT_MONO}
-                                >
-                                    Start Investing
-                                </Link>
+                                        <ul className="space-y-4 pt-4 border-t border-white/20 text-white">
+                                            {plan.features?.map((f: string, j: number) => (
+                                                <li key={j} className="flex items-center gap-3 text-xs text-white/80">
+                                                    <div className="w-1.5 h-1.5 bg-white shrink-0" />
+                                                    {f}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+
+                                    <Link
+                                        href="/register"
+                                        className="w-full text-center py-5 bg-white text-[#1a4d2e] text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-all"
+                                        style={FONT_MONO}
+                                    >
+                                        Start Investing
+                                    </Link>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -41,7 +41,7 @@ export default function LoginPage() {
                 <p className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground mb-4" style={FONT_MONO}>
                     Clover Hills — Secure Client Portal
                 </p>
-                <h1 className="text-5xl font-light mb-10 text-foreground" style={FONT_DISPLAY}>
+                <h1 className="text-5xl font-semibold mb-10 text-foreground" style={FONT_DISPLAY}>
                     Client Login
                 </h1>
 
@@ -79,7 +79,7 @@ export default function LoginPage() {
                             className="w-full py-5 bg-foreground text-background text-[11px] font-semibold uppercase tracking-[0.3em] hover:bg-foreground/80 transition-colors duration-200 disabled:opacity-50 mt-2"
                             style={FONT_SANS}
                         >
-                            {loading ? "Authenticating…" : "Access Portfolio"}
+                            {loading ? "Authenticating…" : "Login"}
                         </button>
                     </form>
                 </div>
@@ -88,7 +88,7 @@ export default function LoginPage() {
                     <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground" style={FONT_MONO}>
                         No account?{" "}
                         <Link href="/register" className="text-foreground hover:underline transition-all">
-                            Apply for access
+                            Create an account
                         </Link>
                     </p>
                 </div>
