@@ -40,7 +40,7 @@ export default function Footer() {
                             className="text-sm leading-relaxed text-muted-foreground max-w-sm mt-4"
                             style={{ fontFamily: "var(--font-syne)" }}
                         >
-                            Archem Capital deploys institutional‑grade algorithmic
+                            Clover Capital Hills deploys institutional‑grade algorithmic
                             infrastructure across liquid digital‑asset markets. Capital
                             preservation and asymmetric yield generation are our only mandates.
                         </p>
@@ -79,7 +79,7 @@ export default function Footer() {
                     <strong className="text-foreground">RISK DISCLOSURE —</strong> Trading
                     and investing in digital assets involves significant risk and may result
                     in the total loss of capital. Past performance does not guarantee future
-                    results. Archem Capital does not provide financial advice.
+                    results. Clover Capital Hills does not provide financial advice.
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-t border-[var(--border-light)] pt-8">
@@ -87,7 +87,7 @@ export default function Footer() {
                         className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground"
                         style={{ fontFamily: "var(--font-mono)" }}
                     >
-                        &copy; {year} Archem Capital Ltd. All rights reserved.
+                        &copy; {year} Clover Capital Hills Ltd. All rights reserved.
                     </p>
                     <div
                         className="text-[10px] font-medium uppercase tracking-[0.25em] text-muted-foreground"
