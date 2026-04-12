@@ -93,16 +93,15 @@ export default function Home() {
                                 className="text-7xl md:text-[7rem] lg:text-[8.5rem] font-semibold leading-[0.88] tracking-tight"
                                 style={FONT_DISPLAY}
                             >
-                                Absolute
+                                Welcome to
                                 <br />
-                                <em style={{ color: "var(--gold)" }}>Execution.</em>
+                                <em style={{ color: "var(--gold)" }}>Clover Capital Hills.</em>
                             </h1>
 
                             <p
                                 className="text-base md:text-lg text-muted-foreground max-w-lg leading-relaxed font-normal"
                                 style={FONT_SANS}
                             >
-                                Welcome to Clover Capital Hills
                                 Clover Capital Hills is an automated investment platform designed to help users benefit
                                 from the massive growth and global popularity of Bitcoin often referred to as digital gold.
                                 As Bitcoin continues to expand in adoption and long-term value, Clover Capital Hills uses
