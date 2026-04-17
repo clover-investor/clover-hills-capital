@@ -262,11 +262,6 @@ export default function Home() {
                                     </div>
 
                                     <div className="space-y-6 mb-12 flex-1">
-                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
-                                            <span className="text-white/70">Min. Deposit</span>
-                                            <span className="text-white font-bold">${plan.min_deposit?.toLocaleString()}</span>
-                                        </div>
-
                                         <ul className="space-y-4 pt-4 border-t border-white/20 text-white">
                                             {plan.features?.map((f: string, j: number) => (
                                                 <li key={j} className="flex items-center gap-3 text-xs text-white/80">

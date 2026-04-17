@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAlert } from "@/components/ui/AlertProvider";
-import { createClient } from "@/utils/supabase/client";
 import Spinner from "@/components/ui/Spinner";
 
 const FONT_MONO = { fontFamily: "var(--font-mono)" };
@@ -15,9 +14,7 @@ export default function PlansPage() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState<any>(null);
     const [investingId, setInvestingId] = useState<string | null>(null);
-    const [amounts, setAmounts] = useState<Record<string, string>>({});
     const { showAlert } = useAlert();
-    const supabase = createClient();
 
     const fallbackPlans = [
         { id: "8f6b6a6c-486d-4e9f-9c60-4e1781191060", name: "Bronze Plan", min_deposit: 100, daily_roi: 10, duration_days: 7, features: ["Daily Earnings Payout", "Standard Trading", "Secure Storage"] },
@@ -54,17 +51,18 @@ export default function PlansPage() {
         fetchData();
     }, []);
 
-    const handleAmountChange = (planId: string, value: string) => {
-        setAmounts(prev => ({ ...prev, [planId]: value }));
-    };
+    const [selectedPlan, setSelectedPlan] = useState<any>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [amount, setAmount] = useState("");
+    const [frequency, setFrequency] = useState("7 days (weekly)");
 
-    const handleInvest = async (plan: any) => {
-        if (!userData) return;
+    const handleInvest = async () => {
+        if (!userData || !selectedPlan) return;
 
-        const investmentAmount = amounts[plan.id] ? Number(amounts[plan.id]) : plan.min_deposit;
+        const investmentAmount = amount ? Number(amount) : selectedPlan.min_deposit;
 
-        if (investmentAmount < plan.min_deposit) {
-            showAlert(`Minimum deposit for ${plan.name} is $${plan.min_deposit.toLocaleString()}.`, "error", "Invalid Amount");
+        if (investmentAmount < selectedPlan.min_deposit) {
+            showAlert(`Minimum deposit for ${selectedPlan.name} is $${selectedPlan.min_deposit.toLocaleString()}.`, "error", "Invalid Amount");
             return;
         }
 
@@ -73,17 +71,22 @@ export default function PlansPage() {
             return;
         }
 
-        setInvestingId(plan.id);
+        setInvestingId(selectedPlan.id);
         try {
             const res = await fetch("/api/invest", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ planId: plan.id, amount: investmentAmount })
+                body: JSON.stringify({
+                    planId: selectedPlan.id,
+                    amount: investmentAmount,
+                    frequency: frequency
+                })
             });
 
             if (res.ok) {
-                showAlert(`Successfully invested $${investmentAmount.toLocaleString()} in the ${plan.name}.`, "success", "Investment Active");
-                setAmounts(prev => ({ ...prev, [plan.id]: "" }));
+                showAlert(`Successfully invested $${investmentAmount.toLocaleString()} in the ${selectedPlan.name}.`, "success", "Investment Active");
+                setIsModalOpen(false);
+                setAmount("");
                 // Refresh user data
                 const userRes = await fetch("/api/user/dashboard");
                 if (userRes.ok) {
@@ -99,6 +102,12 @@ export default function PlansPage() {
         } finally {
             setInvestingId(null);
         }
+    };
+
+    const openInvestmentModal = (plan: any) => {
+        setSelectedPlan(plan);
+        setAmount(plan.min_deposit.toString());
+        setIsModalOpen(true);
     };
 
     if (loading) {
@@ -160,12 +169,7 @@ export default function PlansPage() {
                             </div>
 
                             <div className="space-y-6 mb-12 flex-1">
-                                <div className="flex justify-between items-center text-[10px] uppercase tracking-[0.2em]" style={FONT_MONO}>
-                                    <span className="text-white/70">Min. Deposit</span>
-                                    <span className="text-white font-bold">${plan.min_deposit.toLocaleString()}</span>
-                                </div>
-
-                                <ul className="space-y-4 pt-4 border-t border-white/20 text-white mb-6">
+                                <ul className="space-y-4 pt-4 border-t border-white/20 text-white flex-1">
                                     {plan.features.map((f: string, j: number) => (
                                         <li key={j} className="flex items-center gap-3 text-xs text-white/80">
                                             <div className="w-1.5 h-1.5 bg-white shrink-0" />
@@ -173,31 +177,14 @@ export default function PlansPage() {
                                         </li>
                                     ))}
                                 </ul>
-
-                                <div>
-                                    <label className="block text-white/70 text-[9px] uppercase tracking-[0.2em] mb-2" style={FONT_MONO}>Deposit Amount</label>
-                                    <div className="flex items-center bg-[#143a22] border border-white/20 p-4 focus-within:border-white transition-colors">
-                                        <span className="text-white/70 mr-2 font-bold">$</span>
-                                        <input
-                                            type="number"
-                                            min={plan.min_deposit}
-                                            placeholder={plan.min_deposit.toString()}
-                                            value={amounts[plan.id] || ""}
-                                            onChange={(e) => handleAmountChange(plan.id, e.target.value)}
-                                            className="bg-transparent text-white w-full outline-none font-bold placeholder:text-white/30"
-                                            style={FONT_MONO}
-                                        />
-                                    </div>
-                                </div>
                             </div>
 
                             <button
-                                onClick={() => handleInvest(plan)}
-                                disabled={investingId === plan.id}
-                                className="w-full py-5 bg-white text-[#1a4d2e] text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-all disabled:opacity-50"
+                                onClick={() => openInvestmentModal(plan)}
+                                className="w-full py-5 bg-white text-[#1a4d2e] text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-white/90 transition-all"
                                 style={FONT_MONO}
                             >
-                                {investingId === plan.id ? "Processing…" : "Start Investing"}
+                                Start Investing
                             </button>
                         </div>
                     </div>
@@ -208,6 +195,85 @@ export default function PlansPage() {
                 Note: Larger investments may require a quick verification by our team to ensure account security.
             </div>
 
+            {/* Investment Modal */}
+            {isModalOpen && selectedPlan && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        className="bg-background border border-[var(--border-light)] w-full max-w-lg shadow-2xl"
+                    >
+                        <div className="p-8 border-b border-[var(--border-light)] flex justify-between items-center">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1" style={FONT_MONO}>Configure Investment</p>
+                                <h2 className="text-2xl font-bold" style={FONT_DISPLAY}>{selectedPlan.name}</h2>
+                            </div>
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="p-2 hover:bg-muted transition-colors"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="p-8 space-y-8">
+                            {/* Amount Input */}
+                            <div>
+                                <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Deposit Amount</label>
+                                <div className="flex items-center bg-muted border border-[var(--border-light)] p-5 focus-within:border-foreground transition-colors">
+                                    <span className="text-foreground/70 mr-3 font-bold">$</span>
+                                    <input
+                                        type="number"
+                                        min={selectedPlan.min_deposit}
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        className="bg-transparent text-foreground w-full outline-none font-bold text-lg"
+                                        style={FONT_MONO}
+                                        placeholder={selectedPlan.min_deposit.toString()}
+                                    />
+                                </div>
+                                <p className="mt-2 text-[9px] text-muted-foreground uppercase tracking-wider" style={FONT_MONO}>
+                                    Minimum for this plan: ${selectedPlan.min_deposit.toLocaleString()}
+                                </p>
+                            </div>
+
+                            {/* Frequency Dropdown */}
+                            <div>
+                                <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Top-Up Frequency</label>
+                                <div className="relative">
+                                    <select
+                                        value={frequency}
+                                        onChange={(e) => setFrequency(e.target.value)}
+                                        className="w-full bg-muted border border-[var(--border-light)] p-5 outline-none font-bold text-[11px] uppercase tracking-[0.1em] appearance-none cursor-pointer focus:border-foreground transition-colors"
+                                        style={FONT_MONO}
+                                    >
+                                        <option value="7 days (weekly)">7 Days (Weekly)</option>
+                                        <option value="14 days (bi-weekly)">14 Days (Bi-Weekly)</option>
+                                        <option value="30 days (monthly)">30 Days (Monthly)</option>
+                                    </select>
+                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleInvest}
+                                disabled={investingId === selectedPlan.id}
+                                className="w-full py-6 bg-foreground text-background text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-foreground/90 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                style={FONT_MONO}
+                            >
+                                {investingId === selectedPlan.id ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-background/20 border-t-background rounded-full animate-spin" />
+                                        Processing…
+                                    </>
+                                ) : "Confirm & Start Investment"}
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     );
 }

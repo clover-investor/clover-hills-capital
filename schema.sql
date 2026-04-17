@@ -38,6 +38,11 @@ CREATE TABLE public.transactions (
   amount NUMERIC NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
   plan_id UUID REFERENCES public.plans(id) ON DELETE SET NULL,
+  top_up_frequency TEXT,
+  last_paid_at TIMESTAMPTZ,
+  last_top_up_email_at TIMESTAMPTZ,
+  payment_method TEXT,
+  wallet_address TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -6,6 +6,7 @@ import DailyRoiEmail from '@/emails/DailyRoiEmail';
 import NewInvestmentEmail from '@/emails/NewInvestmentEmail';
 import TransactionRequestEmail from '@/emails/TransactionRequestEmail';
 import AccountActivatedEmail from '@/emails/AccountActivatedEmail';
+import TopUpReminderEmail from '@/emails/TopUpReminderEmail';
 import * as React from 'react';
 
 // Initialize with environment key - safe on server functions
@@ -96,4 +97,29 @@ export async function sendAccountActivatedEmail(to: string, fullName: string) {
             html
         });
     } catch (err) { console.error('Failed to send activation email:', err); }
+}
+
+export async function sendBulkTopUpReminderEmail(users: { email: string; fullName: string; amount: string; frequencyLabel: string }[]) {
+    if (!process.env.RESEND_API_KEY || users.length === 0) return;
+    try {
+        const batch = await Promise.all(users.map(async (user) => {
+            const html = await render(
+                React.createElement(TopUpReminderEmail, {
+                    fullName: user.fullName,
+                    amount: user.amount,
+                    frequencyLabel: user.frequencyLabel
+                })
+            );
+            return {
+                from: senderEmail,
+                to: [user.email],
+                subject: 'Top-up Reminder - Clover Hills',
+                html
+            };
+        }));
+
+        for (let i = 0; i < batch.length; i += 100) {
+            await resend.batch.send(batch.slice(i, i + 100));
+        }
+    } catch (err) { console.error('Failed to send top-up reminder emails:', err); }
 }
