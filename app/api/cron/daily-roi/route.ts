@@ -69,13 +69,17 @@ export async function GET(req: Request) {
                 .gte("created_at", new Date(Date.now() - 15000).toISOString());
 
             if (recentEarnings && recentEarnings.length > 0) {
-                const usersToNotify = (recentEarnings as RecentEarning[])
-                    .filter((tx) => !!tx.users?.email)
-                    .map((tx) => ({
-                        email: tx.users!.email,
-                        amount: Number(tx.amount).toFixed(2),
-                        newBalance: Number(tx.users!.available_balance).toFixed(2)
-                    }));
+                const usersToNotify = (recentEarnings as any[])
+                    .map((tx) => {
+                        const user = Array.isArray(tx.users) ? tx.users[0] : tx.users;
+                        if (!user?.email) return null;
+                        return {
+                            email: user.email,
+                            amount: Number(tx.amount).toFixed(2),
+                            newBalance: Number(user.available_balance).toFixed(2)
+                        };
+                    })
+                    .filter((u): u is { email: string; amount: string; newBalance: string } => u !== null);
 
                 const { sendBulkDailyRoiEmail } = await import('@/lib/email');
                 await sendBulkDailyRoiEmail(usersToNotify);
@@ -101,7 +105,7 @@ export async function GET(req: Request) {
         const todayUtc = startOfUtcDay(new Date());
         const dueRecipients: { txId: string; email: string; fullName: string; amount: string; frequencyLabel: string }[] = [];
 
-        for (const tx of (investments || []) as InvestmentWithFrequency[]) {
+        for (const tx of (investments || []) as any[]) {
             const frequencyDays = frequencyToDays(tx.top_up_frequency);
             if (!frequencyDays) continue;
 
@@ -115,12 +119,13 @@ export async function GET(req: Request) {
             const alreadySentToday = lastSent && startOfUtcDay(lastSent) === todayUtc;
             if (alreadySentToday) continue;
 
-            if (!tx.users?.email) continue;
+            const user = Array.isArray(tx.users) ? tx.users[0] : tx.users;
+            if (!user?.email) continue;
 
             dueRecipients.push({
                 txId: tx.id,
-                email: tx.users.email,
-                fullName: tx.users.full_name || "Investor",
+                email: user.email,
+                fullName: user.full_name || "Investor",
                 amount: Number(tx.amount).toFixed(2),
                 frequencyLabel: frequencyToLabel(frequencyDays),
             });
