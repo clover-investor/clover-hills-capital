@@ -22,15 +22,40 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const chartData = [
-        { day: "Mon", value: 0 },
-        { day: "Tue", value: 0 },
-        { day: "Wed", value: 0 },
-        { day: "Thu", value: 0 },
-        { day: "Fri", value: 0 },
-        { day: "Sat", value: 0 },
-        { day: "Sun", value: 0 },
-    ];
+    const processChartData = (txs: any[]) => {
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const today = new Date();
+        const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const d = new Date();
+            d.setDate(today.getDate() - (6 - i));
+            return {
+                dateStr: d.toISOString().split('T')[0],
+                dayLabel: days[d.getDay()],
+                value: 0
+            };
+        });
+
+        txs.forEach(tx => {
+            if (tx.status !== 'approved') return;
+            if (tx.type !== 'earning' && tx.type !== 'penalty') return;
+
+            const txDate = new Date(tx.created_at).toISOString().split('T')[0];
+            const dayEntry = last7Days.find(d => d.dateStr === txDate);
+
+            if (dayEntry) {
+                const amt = Number(tx.amount);
+                if (tx.type === 'earning') {
+                    dayEntry.value += amt;
+                } else if (tx.type === 'penalty') {
+                    dayEntry.value -= amt;
+                }
+            }
+        });
+
+        return last7Days.map(d => ({ day: d.dayLabel, value: Number(d.value.toFixed(2)) }));
+    };
+
+    const chartData = processChartData(transactions);
 
     const fetchData = async () => {
         try {
@@ -40,12 +65,11 @@ export default function DashboardPage() {
             ]);
             if (dashRes.ok) {
                 const json = await dashRes.json();
-                // API returns { user: {...}, transactions: [...] }
                 if (json.user) setUserData(json.user);
             }
             if (txRes.ok) {
                 const { transactions: txs } = await txRes.json();
-                if (txs) setTransactions(txs);
+                if (txs) setTransactions(txs || []);
             }
         } finally {
             setLoading(false);
@@ -54,6 +78,7 @@ export default function DashboardPage() {
     };
 
     useEffect(() => { fetchData(); }, []);
+
 
     if (loading) {
         return <Spinner label="Loading your  dashboard..." />;

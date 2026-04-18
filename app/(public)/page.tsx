@@ -136,9 +136,9 @@ export default function Home() {
                             className="w-full lg:w-80 flex flex-col gap-px bg-foreground border border-foreground"
                         >
                             {[
-                                { label: "Assets Under Management", val: "$298.7k" },
+                                { label: "Assets Under Management", val: "$300m+" },
                                 { label: "Algorithm Uptime", val: "99.99%" },
-                                { label: "Active Client Accounts", val: "100+" },
+                                { label: "Active Client Accounts", val: "250+" },
                             ].map((s) => (
                                 <div key={s.label} className="bg-background px-8 py-8 hover:bg-muted transition-colors duration-200">
                                     <p className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground mb-3" style={FONT_MONO}>
