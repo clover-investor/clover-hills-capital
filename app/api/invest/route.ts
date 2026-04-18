@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     try {
-        const { planId, amount, frequency } = await req.json();
+        const { planId, amount, frequency, duration } = await req.json();
 
         if (!planId || !amount || amount <= 0) {
             return NextResponse.json({ error: "Invalid investment parameters" }, { status: 400 });
@@ -70,6 +70,7 @@ export async function POST(req: Request) {
             amount: amount,
             plan_id: linkablePlanId,
             top_up_frequency: frequency,
+            duration_days: duration ? Number(duration) : null,
             status: "approved"
         });
 

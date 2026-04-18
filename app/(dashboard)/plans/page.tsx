@@ -55,6 +55,7 @@ export default function PlansPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [amount, setAmount] = useState("");
     const [frequency, setFrequency] = useState("7 days (weekly)");
+    const [duration, setDuration] = useState("30");
 
     const handleInvest = async () => {
         if (!userData || !selectedPlan) return;
@@ -79,7 +80,8 @@ export default function PlansPage() {
                 body: JSON.stringify({
                     planId: selectedPlan.id,
                     amount: investmentAmount,
-                    frequency: frequency
+                    frequency: frequency,
+                    duration: Number(duration)
                 })
             });
 
@@ -237,22 +239,45 @@ export default function PlansPage() {
                                 </p>
                             </div>
 
-                            {/* Frequency Dropdown */}
-                            <div>
-                                <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Top-Up Frequency</label>
-                                <div className="relative">
-                                    <select
-                                        value={frequency}
-                                        onChange={(e) => setFrequency(e.target.value)}
-                                        className="w-full bg-muted border border-[var(--border-light)] p-5 outline-none font-bold text-[11px] uppercase tracking-[0.1em] appearance-none cursor-pointer focus:border-foreground transition-colors"
-                                        style={FONT_MONO}
-                                    >
-                                        <option value="7 days (weekly)">7 Days (Weekly)</option>
-                                        <option value="14 days (bi-weekly)">14 Days (Bi-Weekly)</option>
-                                        <option value="30 days (monthly)">30 Days (Monthly)</option>
-                                    </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            {/* Frequency & Duration row */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Top-Up Frequency</label>
+                                    <div className="relative">
+                                        <select
+                                            value={frequency}
+                                            onChange={(e) => setFrequency(e.target.value)}
+                                            className="w-full bg-muted border border-[var(--border-light)] p-5 outline-none font-bold text-[11px] uppercase tracking-[0.1em] appearance-none cursor-pointer focus:border-foreground transition-colors"
+                                            style={FONT_MONO}
+                                        >
+                                            <option value="7 days (weekly)">7 Days (Weekly)</option>
+                                            <option value="14 days (bi-weekly)">14 Days (Bi-Weekly)</option>
+                                            <option value="30 days (monthly)">30 Days (Monthly)</option>
+                                        </select>
+                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Investment Period</label>
+                                    <div className="relative">
+                                        <select
+                                            value={duration}
+                                            onChange={(e) => setDuration(e.target.value)}
+                                            className="w-full bg-muted border border-[var(--border-light)] p-5 outline-none font-bold text-[11px] uppercase tracking-[0.1em] appearance-none cursor-pointer focus:border-foreground transition-colors"
+                                            style={FONT_MONO}
+                                        >
+                                            <option value="30">1 Month (30 Days)</option>
+                                            <option value="90">3 Months (90 Days)</option>
+                                            <option value="180">6 Months (180 Days)</option>
+                                            <option value="365">1 Year (365 Days)</option>
+                                            <option value="730">2 Years (730 Days)</option>
+                                        </select>
+                                        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
