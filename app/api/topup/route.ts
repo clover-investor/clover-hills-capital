@@ -52,15 +52,11 @@ export async function POST(req: Request) {
         if (userUpdateError) throw userUpdateError;
 
         // Update investment transaction
-        // We reset created_at to now to renew the term, and last_paid_at to now to restart ROI logic
         const { error: investUpdateError } = await adminSupabase
             .from("transactions")
             .update({
                 amount: newInvestAmount,
-                created_at: new Date().toISOString(),
-                last_paid_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                status: 'approved' // Ensure it's still approved
+                updated_at: new Date().toISOString()
             })
             .eq("id", transactionId);
 

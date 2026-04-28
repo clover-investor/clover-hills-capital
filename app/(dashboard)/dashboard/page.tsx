@@ -182,7 +182,7 @@ export default function DashboardPage() {
             <div className="space-y-6">
                 <div className="flex justify-between items-end">
                     <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground" style={FONT_MONO}>
-                        Active Strategies
+                        Active Investments
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[var(--border-light)] border border-[var(--border-light)]">
@@ -215,18 +215,35 @@ export default function DashboardPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between text-[8px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
-                                            <span>Progress</span>
-                                            <span>{daysRemaining} Days Remaining</span>
+                                    {inv.top_up_frequency ? (() => {
+                                        const freqDaysStr = inv.top_up_frequency.match(/\d+/)?.[0] || "7";
+                                        const freqDays = parseInt(freqDaysStr);
+                                        const startDate = new Date(inv.created_at);
+                                        const today = new Date();
+                                        const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+                                        const daysIntoCycle = daysSinceStart % freqDays;
+                                        const daysUntilTopup = freqDays - daysIntoCycle;
+                                        const progress = (daysIntoCycle / freqDays) * 100;
+
+                                        return (
+                                            <div className="space-y-2">
+                                                <div className="flex justify-between text-[8px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
+                                                    <span>Cycle Progress</span>
+                                                    <span>Top-up due in {daysUntilTopup} {daysUntilTopup === 1 ? 'day' : 'days'}</span>
+                                                </div>
+                                                <div className="h-1 bg-muted w-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-foreground transition-all duration-1000"
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })() : (
+                                        <div className="h-12 flex items-center">
+                                            <p className="text-[8px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>Fixed Term Strategy</p>
                                         </div>
-                                        <div className="h-1 bg-muted w-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-foreground transition-all duration-1000"
-                                                style={{ width: `${progress}%` }}
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
 
                                     <div className="pt-4 flex gap-4">
                                         <button
