@@ -6,6 +6,8 @@ import {
 } from "recharts";
 import Link from "next/link";
 import Spinner from "@/components/ui/Spinner";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAlert } from "@/components/ui/AlertProvider";
 
 const FONT_MONO = { fontFamily: "var(--font-mono)" };
 const FONT_DISPLAY = { fontFamily: "var(--font-cormorant), Georgia, serif" };
@@ -19,8 +21,16 @@ export default function DashboardPage() {
         earnings: 0,
     });
     const [transactions, setTransactions] = useState<any[]>([]);
+    const [investments, setInvestments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+
+    // Topup Modal State
+    const [isTopupModalOpen, setIsTopupModalOpen] = useState(false);
+    const [selectedInvestment, setSelectedInvestment] = useState<any>(null);
+    const [topupAmount, setTopupAmount] = useState("");
+    const [submittingTopup, setSubmittingTopup] = useState(false);
+    const { showAlert } = useAlert();
 
     const processChartData = (txs: any[]) => {
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -66,6 +76,7 @@ export default function DashboardPage() {
             if (dashRes.ok) {
                 const json = await dashRes.json();
                 if (json.user) setUserData(json.user);
+                if (json.investments) setInvestments(json.investments);
             }
             if (txRes.ok) {
                 const { transactions: txs } = await txRes.json();
@@ -79,9 +90,43 @@ export default function DashboardPage() {
 
     useEffect(() => { fetchData(); }, []);
 
+    const handleTopup = async () => {
+        if (!selectedInvestment || !topupAmount || isNaN(Number(topupAmount)) || Number(topupAmount) <= 0) return;
+
+        if (Number(topupAmount) > userData.available_balance) {
+            showAlert("Insufficient available balance for this top-up.", "error", "Balance Conflict");
+            return;
+        }
+
+        setSubmittingTopup(true);
+        try {
+            const res = await fetch("/api/topup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    transactionId: selectedInvestment.id,
+                    amount: Number(topupAmount)
+                })
+            });
+
+            if (res.ok) {
+                showAlert(`Successfully topped up $${Number(topupAmount).toLocaleString()} to your ${selectedInvestment.plans?.name || 'investment'}.`, "success", "Top-up Complete");
+                setIsTopupModalOpen(false);
+                setTopupAmount("");
+                fetchData();
+            } else {
+                const err = await res.json();
+                showAlert(err.error || "Failed to process top-up.", "error", "Process Error");
+            }
+        } catch {
+            showAlert("A network error occurred. Please try again.", "error", "Connection Error");
+        } finally {
+            setSubmittingTopup(false);
+        }
+    };
 
     if (loading) {
-        return <Spinner label="Loading your  dashboard..." />;
+        return <Spinner label="Loading your dashboard..." />;
     }
 
     const stats = [
@@ -133,6 +178,78 @@ export default function DashboardPage() {
                 ))}
             </div>
 
+            {/* Active Investments */}
+            <div className="space-y-6">
+                <div className="flex justify-between items-end">
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground" style={FONT_MONO}>
+                        Active Strategies
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[var(--border-light)] border border-[var(--border-light)]">
+                    {investments.length === 0 ? (
+                        <div className="bg-background p-10 col-span-2 text-center">
+                            <p className="text-[10px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>No active investments found</p>
+                            <Link href="/plans" className="inline-block mt-4 text-[9px] uppercase tracking-widest font-bold border-b border-foreground" style={FONT_MONO}>Start Your First Strategy →</Link>
+                        </div>
+                    ) : (
+                        investments.map((inv) => {
+                            const startDate = new Date(inv.created_at);
+                            const endDate = new Date(startDate);
+                            endDate.setDate(startDate.getDate() + (inv.duration_days || 30));
+                            const today = new Date();
+                            const totalDays = inv.duration_days || 30;
+                            const daysPassed = Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+                            const daysRemaining = Math.max(0, totalDays - daysPassed);
+                            const progress = Math.min(100, (daysPassed / totalDays) * 100);
+
+                            return (
+                                <div key={inv.id} className="bg-background p-8 space-y-6">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="text-[9px] uppercase tracking-[0.4em] text-[var(--gold)] mb-1" style={FONT_MONO}>Active Deployment</p>
+                                            <h3 className="text-xl font-bold" style={FONT_DISPLAY}>{inv.plans?.name || "Algorithmic Strategy"}</h3>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-2xl font-light" style={FONT_DISPLAY}>${Number(inv.amount).toLocaleString()}</p>
+                                            <p className="text-[9px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>{inv.plans?.daily_roi}% Daily Yield</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[8px] uppercase tracking-widest text-muted-foreground" style={FONT_MONO}>
+                                            <span>Progress</span>
+                                            <span>{daysRemaining} Days Remaining</span>
+                                        </div>
+                                        <div className="h-1 bg-muted w-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-foreground transition-all duration-1000"
+                                                style={{ width: `${progress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 flex gap-4">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedInvestment(inv);
+                                                setIsTopupModalOpen(true);
+                                            }}
+                                            className="flex-1 py-4 border border-foreground text-[9px] font-bold uppercase tracking-[0.3em] hover:bg-foreground hover:text-background transition-all"
+                                            style={FONT_MONO}
+                                        >
+                                            Top-up Capital
+                                        </button>
+                                        <div className="px-4 py-4 bg-muted text-[8px] uppercase tracking-widest flex items-center gap-2" style={FONT_MONO}>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[var(--gold)] animate-pulse" />
+                                            Live
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
 
             {/* Chart + Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 border border-[var(--border-light)]">
@@ -197,6 +314,87 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Topup Modal */}
+            <AnimatePresence>
+                {isTopupModalOpen && selectedInvestment && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-background/90 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-background border border-foreground w-full max-w-lg shadow-2xl"
+                        >
+                            <div className="p-8 border-b border-[var(--border-light)] flex justify-between items-center">
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground mb-1" style={FONT_MONO}>Investment Enhancement</p>
+                                    <h2 className="text-2xl font-bold" style={FONT_DISPLAY}>Top-up Capital</h2>
+                                </div>
+                                <button
+                                    onClick={() => setIsTopupModalOpen(false)}
+                                    className="p-2 hover:bg-muted transition-colors border border-transparent hover:border-[var(--border-light)]"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+
+                            <div className="p-8 space-y-8">
+                                <div className="p-6 bg-muted border border-[var(--border-light)] space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold" style={FONT_MONO}>Current Capital</span>
+                                        <span className="text-lg font-bold" style={FONT_DISPLAY}>${Number(selectedInvestment.amount).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold" style={FONT_MONO}>Available Funds</span>
+                                        <span className="text-lg font-bold text-[var(--gold)]" style={FONT_DISPLAY}>${userData.available_balance.toLocaleString()}</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-3" style={FONT_MONO}>Top-up Amount ($)</label>
+                                    <div className="flex items-center bg-muted border border-[var(--border-light)] p-5 focus-within:border-foreground transition-colors">
+                                        <span className="text-foreground/70 mr-3 font-bold">$</span>
+                                        <input
+                                            type="number"
+                                            value={topupAmount}
+                                            onChange={(e) => setTopupAmount(e.target.value)}
+                                            className="bg-transparent text-foreground w-full outline-none font-bold text-lg"
+                                            style={FONT_MONO}
+                                            placeholder="0.00"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <p className="mt-3 text-[9px] text-muted-foreground uppercase tracking-widest leading-loose" style={FONT_MONO}>
+                                        Note: Topping up will renew your investment period starting from today.
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={handleTopup}
+                                    disabled={submittingTopup || !topupAmount || Number(topupAmount) <= 0}
+                                    className="w-full py-6 bg-foreground text-background text-[11px] font-bold uppercase tracking-[0.3em] hover:bg-foreground/90 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                    style={FONT_MONO}
+                                >
+                                    {submittingTopup ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-background/20 border-t-background rounded-full animate-spin" />
+                                            Processing…
+                                        </>
+                                    ) : "Confirm Top-up"}
+                                </button>
+
+                                <button
+                                    onClick={() => setIsTopupModalOpen(false)}
+                                    className="w-full py-4 text-[9px] uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                                    style={FONT_MONO}
+                                >
+                                    Cancel & Return
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

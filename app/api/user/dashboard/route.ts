@@ -20,8 +20,28 @@ export async function GET() {
         return NextResponse.json({ error: userError.message }, { status: 500 });
     }
 
+    // Get active investments
+    const { data: investments } = await supabase
+        .from("transactions")
+        .select(`
+            id, 
+            amount, 
+            status, 
+            created_at, 
+            duration_days, 
+            top_up_frequency,
+            plans (
+                name,
+                daily_roi
+            )
+        `)
+        .eq("user_id", auth.user.id)
+        .eq("type", "investment")
+        .eq("status", "approved")
+        .order("created_at", { ascending: false });
+
     // Get recent transactions
-    const { data: transactions, error: txError } = await supabase
+    const { data: transactions } = await supabase
         .from("transactions")
         .select("id, type, amount, status, created_at")
         .eq("user_id", auth.user.id)
@@ -31,5 +51,6 @@ export async function GET() {
     return NextResponse.json({
         user,
         transactions: transactions || [],
+        investments: investments || [],
     });
 }

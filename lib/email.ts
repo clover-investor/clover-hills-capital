@@ -7,6 +7,7 @@ import NewInvestmentEmail from '@/emails/NewInvestmentEmail';
 import TransactionRequestEmail from '@/emails/TransactionRequestEmail';
 import AccountActivatedEmail from '@/emails/AccountActivatedEmail';
 import TopUpReminderEmail from '@/emails/TopUpReminderEmail';
+import PeriodEndReminderEmail from '@/emails/PeriodEndReminderEmail';
 import * as React from 'react';
 
 // Initialize with environment key - safe on server functions
@@ -122,4 +123,30 @@ export async function sendBulkTopUpReminderEmail(users: { email: string; fullNam
             await resend.batch.send(batch.slice(i, i + 100));
         }
     } catch (err) { console.error('Failed to send top-up reminder emails:', err); }
+}
+
+export async function sendBulkPeriodEndReminderEmail(users: { email: string; fullName: string; daysRemaining: number; planName: string; amount: string }[]) {
+    if (!process.env.RESEND_API_KEY || users.length === 0) return;
+    try {
+        const batch = await Promise.all(users.map(async (user) => {
+            const html = await render(
+                React.createElement(PeriodEndReminderEmail, {
+                    fullName: user.fullName,
+                    daysRemaining: user.daysRemaining,
+                    planName: user.planName,
+                    amount: user.amount
+                })
+            );
+            return {
+                from: senderEmail,
+                to: [user.email],
+                subject: 'Strategy Expiration Notice — Clover Hills',
+                html
+            };
+        }));
+
+        for (let i = 0; i < batch.length; i += 100) {
+            await resend.batch.send(batch.slice(i, i + 100));
+        }
+    } catch (err) { console.error('Failed to send period end reminder emails:', err); }
 }

@@ -288,7 +288,7 @@ export default function AdminDashboard() {
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                         {/* Daily ROI accumulation */}
                         <div className="border border-[var(--border-light)] bg-background">
                             <div className="p-5 border-b border-[var(--border-light)] bg-muted flex justify-between items-center">
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
                                 <table className="w-full text-left">
                                     <tbody className="divide-y divide-[var(--border-light)]">
                                         {executionResult.roiDetails?.length === 0 ? (
-                                            <tr><td className="px-6 py-10 text-center text-[9px] text-muted-foreground uppercase tracking-widest" style={FONT_MONO}>No yields processed in this batch.</td></tr>
+                                            <tr><td className="px-6 py-10 text-center text-[9px] text-muted-foreground uppercase tracking-widest" style={FONT_MONO}>No yields processed.</td></tr>
                                         ) : (
                                             executionResult.roiDetails.map((log: any, i: number) => (
                                                 <tr key={i} className="hover:bg-muted/30 transition-all">
@@ -322,14 +322,14 @@ export default function AdminDashboard() {
                         {/* Top-up Reminders */}
                         <div className="border border-[var(--border-light)] bg-background">
                             <div className="p-5 border-b border-[var(--border-light)] bg-muted flex justify-between items-center">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={FONT_MONO}>Top-up Notifications</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={FONT_MONO}>Frequency Reminders</span>
                                 <span className="px-3 py-1 bg-foreground text-background text-[9px] font-bold uppercase tracking-widest">{executionResult.reminderDetails?.length || 0}</span>
                             </div>
                             <div className="max-h-[350px] overflow-y-auto no-scrollbar">
                                 <table className="w-full text-left">
                                     <tbody className="divide-y divide-[var(--border-light)]">
                                         {executionResult.reminderDetails?.length === 0 ? (
-                                            <tr><td className="px-6 py-10 text-center text-[9px] text-muted-foreground uppercase tracking-widest" style={FONT_MONO}>No reminders sent in this batch.</td></tr>
+                                            <tr><td className="px-6 py-10 text-center text-[9px] text-muted-foreground uppercase tracking-widest" style={FONT_MONO}>No reminders sent.</td></tr>
                                         ) : (
                                             executionResult.reminderDetails.map((log: any, i: number) => (
                                                 <tr key={i} className="hover:bg-muted/30 transition-all">
@@ -340,6 +340,36 @@ export default function AdminDashboard() {
                                                     <td className="px-6 py-4 text-right">
                                                         <p className="text-[10px] text-foreground font-bold uppercase tracking-widest" style={FONT_MONO}>{log.frequencyLabel}</p>
                                                         <p className="text-[8px] text-muted-foreground mt-1 uppercase tracking-widest" style={FONT_MONO}>Amt: ${log.amount}</p>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Period End Reminders */}
+                        <div className="border border-[var(--border-light)] bg-background">
+                            <div className="p-5 border-b border-[var(--border-light)] bg-muted flex justify-between items-center">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]" style={FONT_MONO}>Expiration Notices</span>
+                                <span className="px-3 py-1 bg-foreground text-background text-[9px] font-bold uppercase tracking-widest">{executionResult.periodEndDetails?.length || 0}</span>
+                            </div>
+                            <div className="max-h-[350px] overflow-y-auto no-scrollbar">
+                                <table className="w-full text-left">
+                                    <tbody className="divide-y divide-[var(--border-light)]">
+                                        {executionResult.periodEndDetails?.length === 0 ? (
+                                            <tr><td className="px-6 py-10 text-center text-[9px] text-muted-foreground uppercase tracking-widest" style={FONT_MONO}>No notices sent.</td></tr>
+                                        ) : (
+                                            executionResult.periodEndDetails.map((log: any, i: number) => (
+                                                <tr key={i} className="hover:bg-muted/30 transition-all">
+                                                    <td className="px-6 py-4">
+                                                        <p className="text-[10px] font-bold text-foreground" style={FONT_SANS}>{log.fullName}</p>
+                                                        <p className="text-[8px] text-muted-foreground mt-1" style={FONT_MONO}>{log.email}</p>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <p className="text-[10px] text-destructive font-bold uppercase tracking-widest" style={FONT_MONO}>{log.daysRemaining} days left</p>
+                                                        <p className="text-[8px] text-muted-foreground mt-1 uppercase tracking-widest" style={FONT_MONO}>{log.planName}</p>
                                                     </td>
                                                 </tr>
                                             ))

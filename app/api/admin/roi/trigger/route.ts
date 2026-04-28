@@ -135,11 +135,79 @@ export async function POST() {
         console.error("Top-up reminder dispatch failed:", topUpErr);
     }
 
+    // 5. Period End Reminders (Nearing duration limit)
+    let periodEndRemindersSent = 0;
+    let periodEndDetails: any[] = [];
+    try {
+        const { data: nearingEndInvestments } = await adminDb
+            .from("transactions")
+            .select(`
+                id, 
+                amount, 
+                created_at, 
+                duration_days, 
+                last_top_up_email_at, 
+                users(email, full_name),
+                plans(name)
+            `)
+            .eq("type", "investment")
+            .eq("status", "approved")
+            .not("duration_days", "is", null);
+
+        if (nearingEndInvestments) {
+            const todayUtc = startOfUtcDay(new Date());
+
+            for (const tx of (nearingEndInvestments as any[])) {
+                const createdAt = new Date(tx.created_at);
+                const totalDays = tx.duration_days;
+                const daysPassed = Math.floor((todayUtc - startOfUtcDay(createdAt)) / (1000 * 60 * 60 * 24));
+                const daysRemaining = totalDays - daysPassed;
+
+                // Notify if 3 days or less remaining, but still active
+                if (daysRemaining > 0 && daysRemaining <= 3) {
+                    const lastSent = tx.last_top_up_email_at ? new Date(tx.last_top_up_email_at) : null;
+                    const alreadySentToday = lastSent && startOfUtcDay(lastSent) === todayUtc;
+                    if (alreadySentToday) continue;
+
+                    const user = Array.isArray(tx.users) ? tx.users[0] : tx.users;
+                    if (!user?.email) continue;
+
+                    periodEndDetails.push({
+                        txId: tx.id,
+                        email: user.email,
+                        fullName: user.full_name || "Investor",
+                        daysRemaining,
+                        planName: tx.plans?.name || "Investment Plan",
+                        amount: Number(tx.amount).toFixed(2),
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+
+            if (periodEndDetails.length > 0) {
+                const { sendBulkPeriodEndReminderEmail } = await import('@/lib/email');
+                await sendBulkPeriodEndReminderEmail(periodEndDetails);
+
+                const ids = periodEndDetails.map((r) => r.txId);
+                await adminDb
+                    .from("transactions")
+                    .update({ last_top_up_email_at: new Date().toISOString() })
+                    .in("id", ids);
+
+                periodEndRemindersSent = periodEndDetails.length;
+            }
+        }
+    } catch (endRemErr) {
+        console.error("Period end reminder failed:", endRemErr);
+    }
+
     return NextResponse.json({
         success: true,
         processedCount: processedCount || 0,
         topUpRemindersSent,
+        periodEndRemindersSent,
         roiDetails,
-        reminderDetails
+        reminderDetails,
+        periodEndDetails
     });
 }
