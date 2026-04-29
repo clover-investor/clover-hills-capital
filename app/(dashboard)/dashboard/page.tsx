@@ -382,7 +382,7 @@ export default function DashboardPage() {
                                         />
                                     </div>
                                     <p className="mt-3 text-[9px] text-muted-foreground uppercase tracking-widest leading-loose" style={FONT_MONO}>
-                                        Note: Topping up will renew your investment period starting from today.
+                                        Note: Topping up will not renew your investment period.
                                     </p>
                                 </div>
 
